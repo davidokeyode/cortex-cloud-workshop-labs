@@ -1,0 +1,6 @@
+Name,Email,SSN,CreditCard,Phone,Address
+John Smith,john.smith@example.com,123-45-6789,4111-1111-1111-1111,555-0101,123 Main St New York NY 10001
+Jane Doe,jane.doe@example.com,987-65-4321,5500-0000-0000-0004,555-0102,456 Oak Ave Los Angeles CA 90001
+Bob Johnson,bob.johnson@example.com,456-78-9012,3400-000000-00009,555-0103,789 Pine Rd Chicago IL 60601
+Alice Williams,alice.w@example.com,321-54-9876,6011-0000-0000-0004,555-0104,321 Elm Blvd Houston TX 77001
+Charlie Brown,charlie.b@example.com,654-32-1098,3530-1113-3330-0000,555-0105,654 Maple Dr Phoenix AZ 85001
