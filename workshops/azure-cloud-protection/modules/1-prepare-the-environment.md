@@ -17,7 +17,7 @@ cd cortex-cloud-workshop-labs/workshops/azure-cloud-protection/templates
 
 ```bash
 # Create a resource group
-az group create --name cortex-cloud-lab-rg --location eastus
+az group create --name cortex-cloud-lab-rg --location uksouth
 
 # Deploy the ARM template
 az deployment group create \
@@ -47,14 +47,14 @@ az resource list --resource-group cortex-cloud-lab-rg --output table
 
 ## Resources Deployed
 
-![Azure cloud protection lab architecture](../../../images/azure-cloud-protection/azure-lab-architecture.svg)
+![Azure cloud protection lab architecture](../../../images/azure-cloud-protection/azure-lab-network-diag.png)
 
 | Resource | Name | Details |
 |---|---|---|
 | Virtual Network | cortex-lab-vnet | 10.0.0.0/16 with multiple subnets |
 | VM (Linux) | cortex-lab-linux-vm | Ubuntu 22.04, Standard_D2s_v3 |
 | VM (Windows) | cortex-lab-win-vm | Windows Server 2022, Standard_D2s_v3 |
-| AKS | cortex-lab-aks | Kubernetes 1.31.1, 2-node system pool |
+| AKS | cortex-lab-aks | Kubernetes 1.33, 2-node system pool |
 | ACR | cortexlabacr | Azure Container Registry (Standard SKU) |
 | App Service | cortex-lab-webapp | Python web application |
 | Function App | cortex-lab-func | Python Azure Function |

@@ -24,7 +24,7 @@
     },
     "aksVersion": {
       "type": "string",
-      "defaultValue": "1.31.1",
+      "defaultValue": "1.33",
       "metadata": {
         "description": "Kubernetes version for the AKS cluster"
       }
@@ -86,7 +86,7 @@
     "sqlDbName": "[concat('cortex-lab-db-', variables('uniqueSuffix'))]",
     "storageAccountName": "[concat('cortexlabsa', variables('uniqueSuffix'))]",
     "blobContainerName": "confidential",
-    "keyVaultName": "[concat('cortex-lab-kv-', variables('uniqueSuffix'))]",
+    "keyVaultName": "[concat('cortexkv', variables('uniqueSuffix'))]",
     "deployIdentityName": "CortexLabDeployIdentity",
     "installScriptUrl": "[concat(parameters('_artifactsLocation'), 'installscript.ps1', parameters('_artifactsLocationSasToken'))]",
     "linuxScriptUrl": "[concat(parameters('_artifactsLocation'), 'linuxpostinstall.sh', parameters('_artifactsLocationSasToken'))]"
@@ -424,8 +424,8 @@
         "storageProfile": {
           "imageReference": {
             "publisher": "Canonical",
-            "offer": "0001-com-ubuntu-server-noble",
-            "sku": "24_04-lts-gen2",
+            "offer": "0001-com-ubuntu-server-jammy",
+            "sku": "22_04-lts-gen2",
             "version": "latest"
           },
           "osDisk": {
@@ -461,7 +461,7 @@
     },
     {
       "type": "Microsoft.ContainerRegistry/registries",
-      "apiVersion": "2024-05-01",
+      "apiVersion": "2023-07-01",
       "name": "[variables('acrName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
@@ -546,6 +546,7 @@
         "[resourceId('Microsoft.Web/serverfarms', variables('funcAppPlanName'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
       ],
+      "identity": {"type": "SystemAssigned"},
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('funcAppPlanName'))]",
         "siteConfig": {
@@ -563,7 +564,7 @@
     },
     {
       "type": "Microsoft.Sql/servers",
-      "apiVersion": "2023-02-01",
+      "apiVersion": "2023-08-01",
       "name": "[variables('sqlServerName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
@@ -575,21 +576,21 @@
     },
     {
       "type": "Microsoft.Sql/servers/firewallRules",
-      "apiVersion": "2023-02-01",
+      "apiVersion": "2023-08-01",
       "name": "[concat(variables('sqlServerName'), '/AllowAzureIPs')]",
       "dependsOn": ["[resourceId('Microsoft.Sql/servers', variables('sqlServerName'))]"],
       "properties": {"startIpAddress": "0.0.0.0", "endIpAddress": "0.0.0.0"}
     },
     {
       "type": "Microsoft.Sql/servers/firewallRules",
-      "apiVersion": "2023-02-01",
+      "apiVersion": "2023-08-01",
       "name": "[concat(variables('sqlServerName'), '/AllowAll')]",
       "dependsOn": ["[resourceId('Microsoft.Sql/servers', variables('sqlServerName'))]"],
       "properties": {"startIpAddress": "0.0.0.0", "endIpAddress": "255.255.255.255"}
     },
     {
       "type": "Microsoft.Sql/servers/databases",
-      "apiVersion": "2023-02-01",
+      "apiVersion": "2023-08-01",
       "name": "[concat(variables('sqlServerName'), '/', variables('sqlDbName'))]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
@@ -624,7 +625,7 @@
     },
     {
       "type": "Microsoft.KeyVault/vaults",
-      "apiVersion": "2024-04-01",
+      "apiVersion": "2023-07-01",
       "name": "[variables('keyVaultName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
@@ -633,11 +634,10 @@
         "tenantId": "[subscription().tenantId]",
         "sku": {"family": "A", "name": "standard"},
         "enableSoftDelete": false,
-        "enablePurgeProtection": false,
         "accessPolicies": [
           {
             "tenantId": "[subscription().tenantId]",
-            "objectId": "[reference(resourceId('Microsoft.Web/sites', variables('funcAppName')), '2024-04-01', 'Full').identity.principalId]",
+            "objectId": "[reference(resourceId('Microsoft.Web/sites', variables('funcAppName')), '2023-01-01', 'Full').identity.principalId]",
             "permissions": {"secrets": ["get", "list"]}
           }
         ]
@@ -645,7 +645,7 @@
     },
     {
       "type": "Microsoft.KeyVault/vaults/secrets",
-      "apiVersion": "2024-04-01",
+      "apiVersion": "2023-07-01",
       "name": "[concat(variables('keyVaultName'), '/DatabaseConnectionString')]",
       "dependsOn": [
         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
@@ -657,7 +657,7 @@
     },
     {
       "type": "Microsoft.KeyVault/vaults/secrets",
-      "apiVersion": "2024-04-01",
+      "apiVersion": "2023-07-01",
       "name": "[concat(variables('keyVaultName'), '/StorageAccountKey')]",
       "dependsOn": [
         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
@@ -669,14 +669,14 @@
     },
     {
       "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
-      "apiVersion": "2023-07-31",
+      "apiVersion": "2023-01-31",
       "name": "[variables('deployIdentityName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]"
     },
     {
       "type": "Microsoft.Authorization/roleAssignments",
-      "apiVersion": "2024-04-01",
+      "apiVersion": "2022-04-01",
       "name": "[guid(resourceGroup().id, variables('deployIdentityName'), 'StorageBlobContributor')]",
       "dependsOn": ["[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployIdentityName'))]"],
       "properties": {
@@ -687,7 +687,7 @@
     },
     {
       "type": "Microsoft.Authorization/roleAssignments",
-      "apiVersion": "2024-04-01",
+      "apiVersion": "2022-04-01",
       "name": "[guid(resourceGroup().id, variables('deployIdentityName'), 'ACRPush')]",
       "dependsOn": ["[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployIdentityName'))]"],
       "properties": {
@@ -698,7 +698,7 @@
     },
     {
       "type": "Microsoft.Authorization/roleAssignments",
-      "apiVersion": "2024-04-01",
+      "apiVersion": "2022-04-01",
       "name": "[guid(resourceGroup().id, variables('winVmName'), 'StorageBlobReader')]",
       "dependsOn": ["[resourceId('Microsoft.Compute/virtualMachines', variables('winVmName'))]"],
       "properties": {
@@ -709,7 +709,7 @@
     },
     {
       "type": "Microsoft.Authorization/roleAssignments",
-      "apiVersion": "2024-04-01",
+      "apiVersion": "2022-04-01",
       "name": "[guid(resourceGroup().id, variables('linuxVmName'), 'StorageBlobReader')]",
       "dependsOn": ["[resourceId('Microsoft.Compute/virtualMachines', variables('linuxVmName'))]"],
       "properties": {
@@ -720,7 +720,7 @@
     },
     {
       "type": "Microsoft.Resources/deploymentScripts",
-      "apiVersion": "2024-03-01",
+      "apiVersion": "2023-08-01",
       "name": "importSampleDataToBlob",
       "location": "[resourceGroup().location]",
       "kind": "AzureCLI",
@@ -744,7 +744,7 @@
     },
     {
       "type": "Microsoft.Resources/deploymentScripts",
-      "apiVersion": "2024-03-01",
+      "apiVersion": "2023-08-01",
       "name": "importVulnerableImageToACR",
       "location": "[resourceGroup().location]",
       "kind": "AzureCLI",
@@ -763,7 +763,7 @@
       "properties": {
         "azCliVersion": "2.68.0",
         "retentionInterval": "PT1H",
-        "scriptContent": "[concat('az acr import --name ', variables('acrName'), ' --source docker.io/vulnerables/web-dvwa:latest --image dvwa:latest')]"
+        "scriptContent": "[concat('sleep 30 && az acr import --name ', variables('acrName'), ' --source docker.io/vulnerables/web-dvwa:latest --image dvwa:latest')]"
       }
     }
   ],
