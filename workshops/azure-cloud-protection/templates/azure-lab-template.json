@@ -24,7 +24,7 @@
     },
     "aksVersion": {
       "type": "string",
-      "defaultValue": "1.29.0",
+      "defaultValue": "1.31.1",
       "metadata": {
         "description": "Kubernetes version for the AKS cluster"
       }
@@ -60,40 +60,14 @@
   },
   "variables": {
     "uniqueSuffix": "[uniqueString(resourceGroup().id)]",
-<<<<<<< HEAD
-
-=======
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     "vnetName": "cortex-lab-vnet",
     "vnetPrefix": "10.10.0.0/16",
     "subnetName": "default",
     "subnetPrefix": "10.10.1.0/24",
-<<<<<<< HEAD
-
-=======
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     "aksVnetName": "cortex-lab-aks-vnet",
     "aksVnetPrefix": "10.0.0.0/16",
     "aksSubnetName": "aks-subnet",
     "aksSubnetPrefix": "10.0.0.0/24",
-<<<<<<< HEAD
-
-    "nsgName": "cortex-lab-nsg",
-
-    "winVmName": "[concat('cortex-win-', variables('uniqueSuffix'))]",
-    "winPublicIpName": "[concat('cortex-win-pip-', variables('uniqueSuffix'))]",
-    "winNicName": "[concat('cortex-win-nic-', variables('uniqueSuffix'))]",
-
-    "linuxVmName": "[concat('cortex-linux-', variables('uniqueSuffix'))]",
-    "linuxPublicIpName": "[concat('cortex-linux-pip-', variables('uniqueSuffix'))]",
-    "linuxNicName": "[concat('cortex-linux-nic-', variables('uniqueSuffix'))]",
-
-    "availabilitySetName": "cortex-lab-as",
-
-    "aksClusterName": "[concat('cortex-lab-aks-', variables('uniqueSuffix'))]",
-    "acrName": "[concat('cortexlabcr', variables('uniqueSuffix'))]",
-
-=======
     "nsgName": "cortex-lab-nsg",
     "winVmName": "[concat('cortex-win-', variables('uniqueSuffix'))]",
     "winPublicIpName": "[concat('cortex-win-pip-', variables('uniqueSuffix'))]",
@@ -104,38 +78,23 @@
     "availabilitySetName": "cortex-lab-as",
     "aksClusterName": "[concat('cortex-lab-aks-', variables('uniqueSuffix'))]",
     "acrName": "[concat('cortexlabcr', variables('uniqueSuffix'))]",
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     "appServicePlanName": "cortex-lab-splan",
     "webAppName": "[concat('cortex-lab-app-', variables('uniqueSuffix'))]",
     "funcAppPlanName": "cortex-lab-splan-func",
     "funcAppName": "[concat('cortex-lab-fa-', variables('uniqueSuffix'))]",
-<<<<<<< HEAD
-
-    "sqlServerName": "[concat('cortex-lab-sql-', variables('uniqueSuffix'))]",
-    "sqlDbName": "[concat('cortex-lab-db-', variables('uniqueSuffix'))]",
-
-    "storageAccountName": "[concat('cortexlabsa', variables('uniqueSuffix'))]",
-    "blobContainerName": "confidential",
-
-    "keyVaultName": "[concat('cortex-lab-kv-', variables('uniqueSuffix'))]",
-
-    "deployIdentityName": "CortexLabDeployIdentity",
-
-=======
     "sqlServerName": "[concat('cortex-lab-sql-', variables('uniqueSuffix'))]",
     "sqlDbName": "[concat('cortex-lab-db-', variables('uniqueSuffix'))]",
     "storageAccountName": "[concat('cortexlabsa', variables('uniqueSuffix'))]",
     "blobContainerName": "confidential",
     "keyVaultName": "[concat('cortex-lab-kv-', variables('uniqueSuffix'))]",
     "deployIdentityName": "CortexLabDeployIdentity",
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     "installScriptUrl": "[concat(parameters('_artifactsLocation'), 'installscript.ps1', parameters('_artifactsLocationSasToken'))]",
     "linuxScriptUrl": "[concat(parameters('_artifactsLocation'), 'linuxpostinstall.sh', parameters('_artifactsLocationSasToken'))]"
   },
   "resources": [
     {
       "type": "Microsoft.Network/networkSecurityGroups",
-      "apiVersion": "2023-04-01",
+      "apiVersion": "2024-05-01",
       "name": "[variables('nsgName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
@@ -209,13 +168,9 @@
         ]
       }
     },
-<<<<<<< HEAD
-
-=======
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     {
       "type": "Microsoft.Network/virtualNetworks",
-      "apiVersion": "2023-04-01",
+      "apiVersion": "2024-05-01",
       "name": "[variables('vnetName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
@@ -224,11 +179,7 @@
       ],
       "properties": {
         "addressSpace": {
-<<<<<<< HEAD
-          "addressPrefixes": [ "[variables('vnetPrefix')]" ]
-=======
           "addressPrefixes": ["[variables('vnetPrefix')]"]
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
         },
         "subnets": [
           {
@@ -243,23 +194,15 @@
         ]
       }
     },
-<<<<<<< HEAD
-
-=======
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     {
       "type": "Microsoft.Network/virtualNetworks",
-      "apiVersion": "2023-04-01",
+      "apiVersion": "2024-05-01",
       "name": "[variables('aksVnetName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
       "properties": {
         "addressSpace": {
-<<<<<<< HEAD
-          "addressPrefixes": [ "[variables('aksVnetPrefix')]" ]
-=======
           "addressPrefixes": ["[variables('aksVnetPrefix')]"]
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
         },
         "subnets": [
           {
@@ -271,13 +214,9 @@
         ]
       }
     },
-<<<<<<< HEAD
-
-=======
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     {
       "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
-      "apiVersion": "2023-04-01",
+      "apiVersion": "2024-05-01",
       "name": "[concat(variables('vnetName'), '/peering-to-aks')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
@@ -293,7 +232,7 @@
     },
     {
       "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
-      "apiVersion": "2023-04-01",
+      "apiVersion": "2024-05-01",
       "name": "[concat(variables('aksVnetName'), '/peering-to-vm')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
@@ -307,41 +246,25 @@
         "allowForwardedTraffic": true
       }
     },
-<<<<<<< HEAD
-
-=======
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     {
       "type": "Microsoft.Compute/availabilitySets",
-      "apiVersion": "2023-03-01",
+      "apiVersion": "2024-03-01",
       "name": "[variables('availabilitySetName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
-<<<<<<< HEAD
-      "sku": { "name": "Aligned" },
-=======
       "sku": {"name": "Aligned"},
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
       "properties": {
         "platformFaultDomainCount": 2,
         "platformUpdateDomainCount": 3
       }
     },
-<<<<<<< HEAD
-
-=======
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     {
       "type": "Microsoft.Network/publicIPAddresses",
-      "apiVersion": "2023-04-01",
+      "apiVersion": "2024-05-01",
       "name": "[variables('winPublicIpName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
-<<<<<<< HEAD
-      "sku": { "name": "Basic" },
-=======
       "sku": {"name": "Basic"},
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
       "properties": {
         "publicIPAllocationMethod": "Dynamic",
         "dnsSettings": {
@@ -351,7 +274,7 @@
     },
     {
       "type": "Microsoft.Network/networkInterfaces",
-      "apiVersion": "2023-04-01",
+      "apiVersion": "2024-05-01",
       "name": "[variables('winNicName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
@@ -378,7 +301,7 @@
     },
     {
       "type": "Microsoft.Compute/virtualMachines",
-      "apiVersion": "2023-03-01",
+      "apiVersion": "2024-03-01",
       "name": "[variables('winVmName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
@@ -386,24 +309,12 @@
         "[resourceId('Microsoft.Network/networkInterfaces', variables('winNicName'))]",
         "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetName'))]"
       ],
-<<<<<<< HEAD
-      "identity": {
-        "type": "SystemAssigned"
-      },
-=======
       "identity": {"type": "SystemAssigned"},
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetName'))]"
         },
-<<<<<<< HEAD
-        "hardwareProfile": {
-          "vmSize": "Standard_D2s_v3"
-        },
-=======
         "hardwareProfile": {"vmSize": "Standard_D2s_v3"},
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
         "osProfile": {
           "computerName": "cortex-win",
           "adminUsername": "[parameters('username')]",
@@ -418,31 +329,19 @@
           },
           "osDisk": {
             "createOption": "FromImage",
-<<<<<<< HEAD
-            "managedDisk": {
-              "storageAccountType": "StandardSSD_LRS"
-            }
-=======
             "managedDisk": {"storageAccountType": "StandardSSD_LRS"}
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
           }
         },
         "networkProfile": {
           "networkInterfaces": [
-<<<<<<< HEAD
-            {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('winNicName'))]"
-            }
-=======
             {"id": "[resourceId('Microsoft.Network/networkInterfaces', variables('winNicName'))]"}
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
           ]
         }
       }
     },
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "apiVersion": "2023-03-01",
+      "apiVersion": "2024-03-01",
       "name": "[concat(variables('winVmName'), '/installscript')]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
@@ -454,32 +353,18 @@
         "typeHandlerVersion": "1.10",
         "autoUpgradeMinorVersion": true,
         "settings": {
-<<<<<<< HEAD
-          "fileUris": [
-            "[variables('installScriptUrl')]"
-          ],
-=======
           "fileUris": ["[variables('installScriptUrl')]"],
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
           "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File installscript.ps1"
         }
       }
     },
-<<<<<<< HEAD
-
-=======
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     {
       "type": "Microsoft.Network/publicIPAddresses",
-      "apiVersion": "2023-04-01",
+      "apiVersion": "2024-05-01",
       "name": "[variables('linuxPublicIpName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
-<<<<<<< HEAD
-      "sku": { "name": "Basic" },
-=======
       "sku": {"name": "Basic"},
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
       "properties": {
         "publicIPAllocationMethod": "Dynamic",
         "dnsSettings": {
@@ -489,7 +374,7 @@
     },
     {
       "type": "Microsoft.Network/networkInterfaces",
-      "apiVersion": "2023-04-01",
+      "apiVersion": "2024-05-01",
       "name": "[variables('linuxNicName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
@@ -516,7 +401,7 @@
     },
     {
       "type": "Microsoft.Compute/virtualMachines",
-      "apiVersion": "2023-03-01",
+      "apiVersion": "2024-03-01",
       "name": "[variables('linuxVmName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
@@ -524,70 +409,40 @@
         "[resourceId('Microsoft.Network/networkInterfaces', variables('linuxNicName'))]",
         "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetName'))]"
       ],
-<<<<<<< HEAD
-      "identity": {
-        "type": "SystemAssigned"
-      },
-=======
       "identity": {"type": "SystemAssigned"},
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetName'))]"
         },
-<<<<<<< HEAD
-        "hardwareProfile": {
-          "vmSize": "Standard_D2s_v3"
-        },
-=======
         "hardwareProfile": {"vmSize": "Standard_D2s_v3"},
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
         "osProfile": {
           "computerName": "cortex-linux",
           "adminUsername": "[parameters('username')]",
           "adminPassword": "[parameters('password')]",
-<<<<<<< HEAD
-          "linuxConfiguration": {
-            "disablePasswordAuthentication": false
-          }
-=======
           "linuxConfiguration": {"disablePasswordAuthentication": false}
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
         },
         "storageProfile": {
           "imageReference": {
             "publisher": "Canonical",
-            "offer": "0001-com-ubuntu-server-jammy",
-            "sku": "22_04-lts-gen2",
+            "offer": "0001-com-ubuntu-server-noble",
+            "sku": "24_04-lts-gen2",
             "version": "latest"
           },
           "osDisk": {
             "createOption": "FromImage",
-<<<<<<< HEAD
-            "managedDisk": {
-              "storageAccountType": "StandardSSD_LRS"
-            }
-=======
             "managedDisk": {"storageAccountType": "StandardSSD_LRS"}
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
           }
         },
         "networkProfile": {
           "networkInterfaces": [
-<<<<<<< HEAD
-            {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('linuxNicName'))]"
-            }
-=======
             {"id": "[resourceId('Microsoft.Network/networkInterfaces', variables('linuxNicName'))]"}
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
           ]
         }
       }
     },
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "apiVersion": "2023-03-01",
+      "apiVersion": "2024-03-01",
       "name": "[concat(variables('linuxVmName'), '/linuxpostinstall')]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
@@ -599,55 +454,30 @@
         "typeHandlerVersion": "2.1",
         "autoUpgradeMinorVersion": true,
         "settings": {
-<<<<<<< HEAD
-          "fileUris": [
-            "[variables('linuxScriptUrl')]"
-          ],
-=======
           "fileUris": ["[variables('linuxScriptUrl')]"],
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
           "commandToExecute": "[concat('bash linuxpostinstall.sh ', parameters('username'))]"
         }
       }
     },
-<<<<<<< HEAD
-
-=======
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     {
       "type": "Microsoft.ContainerRegistry/registries",
-      "apiVersion": "2023-07-01",
+      "apiVersion": "2024-05-01",
       "name": "[variables('acrName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
-<<<<<<< HEAD
-      "sku": { "name": "Basic" },
-      "properties": {
-        "adminUserEnabled": true
-      }
-    },
-
-=======
       "sku": {"name": "Basic"},
       "properties": {"adminUserEnabled": true}
     },
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     {
       "type": "Microsoft.ContainerService/managedClusters",
-      "apiVersion": "2024-01-01",
+      "apiVersion": "2024-09-01",
       "name": "[variables('aksClusterName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('aksVnetName'))]"
       ],
-<<<<<<< HEAD
-      "identity": {
-        "type": "SystemAssigned"
-      },
-=======
       "identity": {"type": "SystemAssigned"},
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
       "properties": {
         "kubernetesVersion": "[parameters('aksVersion')]",
         "dnsPrefix": "[variables('aksClusterName')]",
@@ -669,29 +499,18 @@
         }
       }
     },
-<<<<<<< HEAD
-
-=======
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     {
       "type": "Microsoft.Web/serverfarms",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2024-04-01",
       "name": "[variables('appServicePlanName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
-<<<<<<< HEAD
-      "sku": {
-        "name": "F1",
-        "tier": "Free"
-      },
-=======
       "sku": {"name": "F1", "tier": "Free"},
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
       "properties": {}
     },
     {
       "type": "Microsoft.Web/sites",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2024-04-01",
       "name": "[variables('webAppName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
@@ -707,32 +526,18 @@
         }
       }
     },
-<<<<<<< HEAD
-
-=======
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     {
       "type": "Microsoft.Web/serverfarms",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2024-04-01",
       "name": "[variables('funcAppPlanName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
-<<<<<<< HEAD
-      "sku": {
-        "name": "Y1",
-        "tier": "Dynamic"
-      },
-      "properties": {
-        "reserved": true
-      }
-=======
       "sku": {"name": "Y1", "tier": "Dynamic"},
       "properties": {"reserved": true}
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     },
     {
       "type": "Microsoft.Web/sites",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2024-04-01",
       "name": "[variables('funcAppName')]",
       "location": "[resourceGroup().location]",
       "kind": "functionapp,linux",
@@ -747,33 +552,18 @@
           "appSettings": [
             {
               "name": "AzureWebJobsStorage",
-              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2023-01-01').keys[0].value)]"
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2024-01-01').keys[0].value)]"
             },
-<<<<<<< HEAD
-            {
-              "name": "FUNCTIONS_EXTENSION_VERSION",
-              "value": "~4"
-            },
-            {
-              "name": "FUNCTIONS_WORKER_RUNTIME",
-              "value": "python"
-            }
-=======
             {"name": "FUNCTIONS_EXTENSION_VERSION", "value": "~4"},
             {"name": "FUNCTIONS_WORKER_RUNTIME", "value": "python"}
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
           ],
-          "linuxFxVersion": "Python|3.11"
+          "linuxFxVersion": "Python|3.12"
         }
       }
     },
-<<<<<<< HEAD
-
-=======
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     {
       "type": "Microsoft.Sql/servers",
-      "apiVersion": "2022-05-01-preview",
+      "apiVersion": "2023-02-01",
       "name": "[variables('sqlServerName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
@@ -785,81 +575,40 @@
     },
     {
       "type": "Microsoft.Sql/servers/firewallRules",
-      "apiVersion": "2022-05-01-preview",
+      "apiVersion": "2023-02-01",
       "name": "[concat(variables('sqlServerName'), '/AllowAzureIPs')]",
-<<<<<<< HEAD
-      "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', variables('sqlServerName'))]"
-      ],
-      "properties": {
-        "startIpAddress": "0.0.0.0",
-        "endIpAddress": "0.0.0.0"
-      }
-=======
       "dependsOn": ["[resourceId('Microsoft.Sql/servers', variables('sqlServerName'))]"],
       "properties": {"startIpAddress": "0.0.0.0", "endIpAddress": "0.0.0.0"}
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     },
     {
       "type": "Microsoft.Sql/servers/firewallRules",
-      "apiVersion": "2022-05-01-preview",
+      "apiVersion": "2023-02-01",
       "name": "[concat(variables('sqlServerName'), '/AllowAll')]",
-<<<<<<< HEAD
-      "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', variables('sqlServerName'))]"
-      ],
-      "properties": {
-        "startIpAddress": "0.0.0.0",
-        "endIpAddress": "255.255.255.255"
-      }
-=======
       "dependsOn": ["[resourceId('Microsoft.Sql/servers', variables('sqlServerName'))]"],
       "properties": {"startIpAddress": "0.0.0.0", "endIpAddress": "255.255.255.255"}
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     },
     {
       "type": "Microsoft.Sql/servers/databases",
-      "apiVersion": "2022-05-01-preview",
+      "apiVersion": "2023-02-01",
       "name": "[concat(variables('sqlServerName'), '/', variables('sqlDbName'))]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
-<<<<<<< HEAD
-      "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', variables('sqlServerName'))]"
-      ],
-      "sku": {
-        "name": "Basic",
-        "tier": "Basic",
-        "capacity": 5
-      },
-=======
       "dependsOn": ["[resourceId('Microsoft.Sql/servers', variables('sqlServerName'))]"],
       "sku": {"name": "Basic", "tier": "Basic", "capacity": 5},
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
       "properties": {
         "collation": "SQL_Latin1_General_CP1_CI_AS",
         "maxSizeBytes": 104857600,
         "sampleName": "AdventureWorksLT"
       }
     },
-<<<<<<< HEAD
-
-=======
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     {
       "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2023-01-01",
+      "apiVersion": "2024-01-01",
       "name": "[variables('storageAccountName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
       "kind": "StorageV2",
-<<<<<<< HEAD
-      "sku": {
-        "name": "[parameters('storageAccountType')]"
-      },
-=======
       "sku": {"name": "[parameters('storageAccountType')]"},
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
       "properties": {
         "supportsHttpsTrafficOnly": false,
         "allowBlobPublicAccess": true,
@@ -868,67 +617,35 @@
     },
     {
       "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-      "apiVersion": "2023-01-01",
+      "apiVersion": "2024-01-01",
       "name": "[concat(variables('storageAccountName'), '/default/', variables('blobContainerName'))]",
-<<<<<<< HEAD
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
-      ],
-      "properties": {
-        "publicAccess": "Blob"
-      }
-    },
-
-=======
       "dependsOn": ["[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"],
       "properties": {"publicAccess": "Blob"}
     },
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     {
       "type": "Microsoft.KeyVault/vaults",
-      "apiVersion": "2023-07-01",
+      "apiVersion": "2024-04-01",
       "name": "[variables('keyVaultName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
-<<<<<<< HEAD
-      "properties": {
-        "tenantId": "[subscription().tenantId]",
-        "sku": {
-          "family": "A",
-          "name": "standard"
-        },
-=======
       "dependsOn": ["[resourceId('Microsoft.Web/sites', variables('funcAppName'))]"],
       "properties": {
         "tenantId": "[subscription().tenantId]",
         "sku": {"family": "A", "name": "standard"},
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
         "enableSoftDelete": false,
         "enablePurgeProtection": false,
         "accessPolicies": [
           {
             "tenantId": "[subscription().tenantId]",
-            "objectId": "[reference(resourceId('Microsoft.Web/sites', variables('funcAppName')), '2022-09-01', 'Full').identity.principalId]",
-<<<<<<< HEAD
-            "permissions": {
-              "secrets": [ "get", "list" ]
-            }
-          }
-        ]
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', variables('funcAppName'))]"
-      ]
-=======
+            "objectId": "[reference(resourceId('Microsoft.Web/sites', variables('funcAppName')), '2024-04-01', 'Full').identity.principalId]",
             "permissions": {"secrets": ["get", "list"]}
           }
         ]
       }
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     },
     {
       "type": "Microsoft.KeyVault/vaults/secrets",
-      "apiVersion": "2023-07-01",
+      "apiVersion": "2024-04-01",
       "name": "[concat(variables('keyVaultName'), '/DatabaseConnectionString')]",
       "dependsOn": [
         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
@@ -940,38 +657,28 @@
     },
     {
       "type": "Microsoft.KeyVault/vaults/secrets",
-      "apiVersion": "2023-07-01",
+      "apiVersion": "2024-04-01",
       "name": "[concat(variables('keyVaultName'), '/StorageAccountKey')]",
       "dependsOn": [
         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
       ],
       "properties": {
-        "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2023-01-01').keys[0].value]"
+        "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2024-01-01').keys[0].value]"
       }
     },
-<<<<<<< HEAD
-
-=======
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     {
       "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
-      "apiVersion": "2023-01-31",
+      "apiVersion": "2023-07-31",
       "name": "[variables('deployIdentityName')]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]"
     },
     {
       "type": "Microsoft.Authorization/roleAssignments",
-      "apiVersion": "2022-04-01",
+      "apiVersion": "2024-04-01",
       "name": "[guid(resourceGroup().id, variables('deployIdentityName'), 'StorageBlobContributor')]",
-<<<<<<< HEAD
-      "dependsOn": [
-        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployIdentityName'))]"
-      ],
-=======
       "dependsOn": ["[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployIdentityName'))]"],
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
         "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployIdentityName'))).principalId]",
@@ -980,66 +687,40 @@
     },
     {
       "type": "Microsoft.Authorization/roleAssignments",
-      "apiVersion": "2022-04-01",
+      "apiVersion": "2024-04-01",
       "name": "[guid(resourceGroup().id, variables('deployIdentityName'), 'ACRPush')]",
-<<<<<<< HEAD
-      "dependsOn": [
-        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployIdentityName'))]"
-      ],
-=======
       "dependsOn": ["[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployIdentityName'))]"],
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8311e382-0749-4cb8-b61a-304f252e45ec')]",
         "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployIdentityName'))).principalId]",
         "principalType": "ServicePrincipal"
       }
     },
-<<<<<<< HEAD
-
-=======
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     {
       "type": "Microsoft.Authorization/roleAssignments",
-      "apiVersion": "2022-04-01",
+      "apiVersion": "2024-04-01",
       "name": "[guid(resourceGroup().id, variables('winVmName'), 'StorageBlobReader')]",
-<<<<<<< HEAD
-      "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('winVmName'))]"
-      ],
-=======
       "dependsOn": ["[resourceId('Microsoft.Compute/virtualMachines', variables('winVmName'))]"],
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1')]",
-        "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('winVmName')), '2023-03-01', 'Full').identity.principalId]",
+        "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('winVmName')), '2024-03-01', 'Full').identity.principalId]",
         "principalType": "ServicePrincipal"
       }
     },
     {
       "type": "Microsoft.Authorization/roleAssignments",
-      "apiVersion": "2022-04-01",
+      "apiVersion": "2024-04-01",
       "name": "[guid(resourceGroup().id, variables('linuxVmName'), 'StorageBlobReader')]",
-<<<<<<< HEAD
-      "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('linuxVmName'))]"
-      ],
-=======
       "dependsOn": ["[resourceId('Microsoft.Compute/virtualMachines', variables('linuxVmName'))]"],
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1')]",
-        "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('linuxVmName')), '2023-03-01', 'Full').identity.principalId]",
+        "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('linuxVmName')), '2024-03-01', 'Full').identity.principalId]",
         "principalType": "ServicePrincipal"
       }
     },
-<<<<<<< HEAD
-
-=======
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     {
       "type": "Microsoft.Resources/deploymentScripts",
-      "apiVersion": "2023-08-01",
+      "apiVersion": "2024-03-01",
       "name": "importSampleDataToBlob",
       "location": "[resourceGroup().location]",
       "kind": "AzureCLI",
@@ -1056,18 +737,14 @@
         "[guid(resourceGroup().id, variables('deployIdentityName'), 'StorageBlobContributor')]"
       ],
       "properties": {
-        "azCliVersion": "2.52.0",
+        "azCliVersion": "2.68.0",
         "retentionInterval": "PT1H",
         "scriptContent": "[concat('curl -sL \"https://raw.githubusercontent.com/davidokeyode/cortex-cloud-workshop-labs/main/workshops/azure-cloud-protection/templates/sample-data.csv\" -o /tmp/sample-data.csv && az storage blob upload --account-name ', variables('storageAccountName'), ' --container-name ', variables('blobContainerName'), ' --name customer-data.csv --file /tmp/sample-data.csv --auth-mode login')]"
       }
     },
-<<<<<<< HEAD
-
-=======
->>>>>>> 728e54f0d3c79b6e3be82eeba531eea235fb0b6f
     {
       "type": "Microsoft.Resources/deploymentScripts",
-      "apiVersion": "2023-08-01",
+      "apiVersion": "2024-03-01",
       "name": "importVulnerableImageToACR",
       "location": "[resourceGroup().location]",
       "kind": "AzureCLI",
@@ -1084,7 +761,7 @@
         "[guid(resourceGroup().id, variables('deployIdentityName'), 'ACRPush')]"
       ],
       "properties": {
-        "azCliVersion": "2.52.0",
+        "azCliVersion": "2.68.0",
         "retentionInterval": "PT1H",
         "scriptContent": "[concat('az acr import --name ', variables('acrName'), ' --source docker.io/vulnerables/web-dvwa:latest --image dvwa:latest')]"
       }
