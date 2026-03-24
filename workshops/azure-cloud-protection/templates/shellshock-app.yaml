@@ -1,0 +1,64 @@
+##############################################################################
+# shellshock-app.yaml — Shellshock-vulnerable application
+# Deploys a CGI-based app vulnerable to CVE-2014-6271 (Shellshock).
+# Used for runtime detection and incident response labs.
+##############################################################################
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: shellshock
+  labels:
+    app: shellshock
+    purpose: security-testing
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shellshock-app
+  namespace: shellshock
+  labels:
+    app: shellshock-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shellshock-app
+  template:
+    metadata:
+      labels:
+        app: shellshock-app
+    spec:
+      containers:
+      - name: shellshock-app
+        image: hmlio/vaas-cve-2014-6271:latest
+        ports:
+        - containerPort: 80
+          name: http
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        securityContext:
+          runAsUser: 0
+          allowPrivilegeEscalation: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shellshock-service
+  namespace: shellshock
+  labels:
+    app: shellshock-app
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30001
+    protocol: TCP
+    name: http
+  selector:
+    app: shellshock-app
