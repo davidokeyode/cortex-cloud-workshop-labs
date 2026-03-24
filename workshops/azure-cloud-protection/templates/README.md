@@ -28,6 +28,8 @@ The ARM template accepts the following parameters:
 
 ## Resources Deployed
 
+![Azure cloud protection lab architecture](../../../images/azure-cloud-protection/azure-lab-architecture.svg)
+
 | Category | Resources |
 |---|---|
 | **Networking** | VNet (10.10.0.0/16), AKS VNet (10.0.0.0/16), VNet peering, NSG |

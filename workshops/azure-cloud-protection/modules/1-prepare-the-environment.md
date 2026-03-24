@@ -47,6 +47,8 @@ az resource list --resource-group cortex-cloud-lab-rg --output table
 
 ## Resources Deployed
 
+![Azure cloud protection lab architecture](../../../images/azure-cloud-protection/azure-lab-architecture.svg)
+
 | Resource | Name | Details |
 |---|---|---|
 | Virtual Network | cortex-lab-vnet | 10.0.0.0/16 with multiple subnets |

@@ -1,0 +1,214 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="980" viewBox="0 0 1600 980" role="img" aria-labelledby="title desc">
+  <title id="title">Azure Cloud Protection Workshop Lab Architecture</title>
+  <desc id="desc">Architecture diagram showing the Azure resources deployed for the Cortex Cloud Azure lab.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f8fbff"/>
+      <stop offset="100%" stop-color="#eef5ff"/>
+    </linearGradient>
+    <linearGradient id="tenantBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f7fbff"/>
+      <stop offset="100%" stop-color="#ddeafe"/>
+    </linearGradient>
+    <linearGradient id="subscriptionBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f7fbff"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#9fb7d8" flood-opacity="0.35"/>
+    </filter>
+    <style>
+      text { font-family: "Segoe UI", Arial, sans-serif; fill: #15314b; }
+      .heading { font-size: 32px; font-weight: 700; }
+      .subheading { font-size: 20px; font-weight: 600; fill: #2d6ac8; }
+      .label { font-size: 18px; font-weight: 600; }
+      .small { font-size: 15px; fill: #4a627d; }
+      .tiny { font-size: 13px; fill: #5c7289; }
+      .card { fill: #ffffff; stroke: #9bc0f6; stroke-width: 2; rx: 22; }
+      .group { fill: #ffffff; stroke: #5bbf90; stroke-width: 3; stroke-dasharray: 10 8; rx: 20; }
+      .pill { fill: #edf4ff; stroke: #b7cff8; stroke-width: 2; rx: 18; }
+      .accent { fill: #2d6ac8; }
+      .muted { fill: #5c7289; }
+      .stroke-accent { stroke: #2d6ac8; stroke-width: 4; fill: none; }
+      .stroke-link { stroke: #2c425f; stroke-width: 5; fill: none; marker-end: url(#arrow); }
+      .stroke-peer { stroke: #5a85c7; stroke-width: 3; fill: none; stroke-dasharray: 9 7; marker-end: url(#arrowSmall); marker-start: url(#arrowSmall); }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#2c425f"/>
+    </marker>
+    <marker id="arrowSmall" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5a85c7"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1600" height="980" fill="url(#bg)"/>
+
+  <text x="56" y="68" class="heading">Azure Cloud Protection Workshop</text>
+  <text x="56" y="102" class="small">Lab environment deployed by the ARM template for modules 1 through 10</text>
+
+  <g filter="url(#shadow)">
+    <rect x="1090" y="30" width="450" height="165" rx="26" fill="url(#tenantBg)" stroke="#8fb4ea" stroke-width="2.5"/>
+  </g>
+  <text x="1160" y="76" class="subheading">Microsoft Entra ID Tenant</text>
+  <g transform="translate(1128 92)">
+    <circle cx="34" cy="36" r="16" fill="#3bb3e6"/>
+    <path d="M10 82 C12 57, 56 57, 58 82" fill="#59c1eb"/>
+    <circle cx="128" cy="36" r="16" fill="#1f9bd3"/>
+    <circle cx="157" cy="42" r="11" fill="#4fc0ec"/>
+    <path d="M104 82 C108 56, 150 56, 152 82" fill="#2ca8de"/>
+    <path d="M142 82 C144 65, 176 65, 176 82" fill="#65c8ef"/>
+    <rect x="238" y="24" width="44" height="44" rx="6" fill="#6ba6ff"/>
+    <path d="M252 24 V68 M268 24 V68 M238 40 H282 M238 56 H282" stroke="#dbe8ff" stroke-width="3"/>
+    <path d="M352 20 L374 32 L374 57 C374 71 364 82 352 89 C340 82 330 71 330 57 L330 32 Z" fill="#ffcc2f"/>
+    <circle cx="352" cy="51" r="10" fill="#fff0b5"/>
+    <rect x="349" y="59" width="6" height="12" rx="3" fill="#fff0b5"/>
+  </g>
+  <text x="1130" y="170" class="small">Users, groups, apps, and service principals authenticate here</text>
+
+  <path d="M1315 196 V248" class="stroke-link"/>
+
+  <g filter="url(#shadow)">
+    <rect x="26" y="250" width="1548" height="680" rx="30" fill="url(#subscriptionBg)" stroke="#7faee9" stroke-width="3"/>
+  </g>
+
+  <g transform="translate(52 282)">
+    <path d="M42 36 C42 18, 58 4, 78 4 C92 4, 104 11, 111 22 C116 17, 123 14, 131 14 C148 14, 162 28, 162 46 C162 47, 162 48, 162 49 L42 49 C42 45, 42 41, 42 36 Z" fill="#ffffff" stroke="#356cc5" stroke-width="5"/>
+    <path d="M84 22 L100 16 L117 34 L103 70 L86 52 Z" fill="#2d6ac8"/>
+    <path d="M101 18 L118 34 L105 70 L97 61 Z" fill="#48b7ec"/>
+  </g>
+  <text x="170" y="316" class="heading" style="font-size: 28px;">Azure Subscription</text>
+  <text x="170" y="346" class="small">Resource group contains networking, compute, container, app, and data services used across the lab</text>
+
+  <g>
+    <rect x="82" y="380" width="500" height="430" class="group"/>
+    <text x="112" y="404" class="subheading">Networking and Compute</text>
+
+    <rect x="112" y="430" width="420" height="66" class="pill"/>
+    <text x="140" y="470" class="label">cortex-lab-vnet</text>
+    <text x="360" y="470" class="small">10.10.0.0/16</text>
+
+    <rect x="132" y="522" width="380" height="228" rx="22" fill="#eef4ff" stroke="#c2d7fb" stroke-width="2"/>
+    <text x="156" y="552" class="label">default subnet</text>
+    <text x="316" y="552" class="small">10.10.1.0/24</text>
+
+    <rect x="164" y="585" width="140" height="88" rx="18" fill="#ffffff" stroke="#8cb4f1" stroke-width="2"/>
+    <rect x="206" y="606" width="56" height="36" rx="6" fill="#53b8ef"/>
+    <rect x="197" y="647" width="74" height="8" rx="4" fill="#a4bddb"/>
+    <text x="178" y="700" class="label">Windows VM</text>
+    <text x="176" y="722" class="small">cortex-win-*</text>
+
+    <rect x="340" y="585" width="140" height="88" rx="18" fill="#ffffff" stroke="#8cb4f1" stroke-width="2"/>
+    <rect x="382" y="606" width="56" height="36" rx="6" fill="#53b8ef"/>
+    <rect x="373" y="647" width="74" height="8" rx="4" fill="#a4bddb"/>
+    <text x="365" y="700" class="label">Linux VM</text>
+    <text x="354" y="722" class="small">cortex-linux-*</text>
+
+    <path d="M128 748 C132 716, 184 712, 194 746 C197 764, 182 782, 160 786 C138 790, 118 776, 128 748 Z" fill="#2d6ac8" opacity="0.15"/>
+    <path d="M150 728 L185 740 L180 776 L147 790 L116 776 L111 742 Z" fill="#2d6ac8" opacity="0.85"/>
+    <path d="M150 742 L166 747 L164 770 L149 777 L135 771 L132 748 Z" fill="#8fd0f4"/>
+    <text x="196" y="778" class="label">cortex-lab-nsg</text>
+    <text x="196" y="802" class="small">Inbound lab rules: 22, 3389, 80, 443, 4200</text>
+  </g>
+
+  <g>
+    <rect x="622" y="380" width="430" height="208" class="group"/>
+    <text x="650" y="404" class="subheading">Container Services</text>
+
+    <rect x="652" y="444" width="150" height="108" rx="20" fill="#ffffff" stroke="#8cb4f1" stroke-width="2"/>
+    <ellipse cx="727" cy="486" rx="34" ry="20" fill="#3aa7e2"/>
+    <rect x="702" y="489" width="50" height="22" rx="10" fill="#5bc2ef"/>
+    <rect x="692" y="519" width="20" height="18" fill="#8796a8"/>
+    <rect x="714" y="519" width="20" height="18" fill="#6d7f93"/>
+    <rect x="736" y="519" width="20" height="18" fill="#8796a8"/>
+    <text x="694" y="570" class="label">ACR</text>
+    <text x="677" y="592" class="small">cortexlabcr*</text>
+
+    <rect x="830" y="444" width="184" height="108" rx="20" fill="#ffffff" stroke="#8cb4f1" stroke-width="2"/>
+    <rect x="872" y="468" width="26" height="26" fill="#7a58d1"/>
+    <rect x="905" y="468" width="26" height="26" fill="#8b68dd"/>
+    <rect x="938" y="468" width="26" height="26" fill="#9c7bea"/>
+    <rect x="888" y="500" width="26" height="26" fill="#8b68dd"/>
+    <rect x="921" y="500" width="26" height="26" fill="#7a58d1"/>
+    <text x="880" y="570" class="label">AKS Cluster</text>
+    <text x="846" y="592" class="small">cortex-lab-aks-* with 2 nodes</text>
+  </g>
+
+  <g>
+    <rect x="622" y="622" width="430" height="188" class="group"/>
+    <text x="650" y="646" class="subheading">App Services</text>
+
+    <rect x="650" y="684" width="168" height="92" rx="18" fill="#ffffff" stroke="#8cb4f1" stroke-width="2"/>
+    <rect x="700" y="710" width="66" height="34" rx="10" fill="#2d6ac8" opacity="0.88"/>
+    <path d="M716 719 C718 708, 728 702, 738 702 C750 702, 758 711, 760 720 C770 721, 777 728, 777 738 C777 749, 768 758, 756 758 H718 C705 758, 694 748, 694 735 C694 724, 703 715, 714 715 Z" fill="#73c7f2"/>
+    <text x="683" y="792" class="label">App Service Plan</text>
+    <text x="700" y="814" class="small">cortex-lab-splan</text>
+
+    <rect x="842" y="684" width="92" height="92" rx="18" fill="#ffffff" stroke="#8cb4f1" stroke-width="2"/>
+    <circle cx="888" cy="722" r="24" fill="#3f92ff"/>
+    <path d="M865 722 H911 M888 699 V745" stroke="#dcedff" stroke-width="6" stroke-linecap="round"/>
+    <text x="854" y="792" class="label">Web App</text>
+    <text x="836" y="814" class="small">cortex-lab-app-*</text>
+
+    <rect x="950" y="684" width="92" height="92" rx="18" fill="#ffffff" stroke="#8cb4f1" stroke-width="2"/>
+    <path d="M980 702 L1011 702 L1000 723 L1018 723 L986 760 L993 734 L976 734 Z" fill="#ffbf1f"/>
+    <text x="956" y="792" class="label">Function App</text>
+    <text x="959" y="814" class="small">cortex-lab-fa-*</text>
+  </g>
+
+  <g>
+    <rect x="1100" y="380" width="390" height="188" class="group"/>
+    <text x="1128" y="404" class="subheading">Data Services</text>
+
+    <rect x="1128" y="446" width="108" height="88" rx="18" fill="#ffffff" stroke="#8cb4f1" stroke-width="2"/>
+    <ellipse cx="1182" cy="470" rx="28" ry="12" fill="#3aa7e2"/>
+    <rect x="1154" y="470" width="56" height="34" fill="#2d6ac8"/>
+    <ellipse cx="1182" cy="504" rx="28" ry="12" fill="#1b5bb8"/>
+    <text x="1160" y="556" class="label">SQL</text>
+    <text x="1138" y="578" class="small">Server + DB</text>
+
+    <rect x="1260" y="446" width="108" height="88" rx="18" fill="#ffffff" stroke="#8cb4f1" stroke-width="2"/>
+    <rect x="1287" y="462" width="54" height="44" rx="8" fill="#54c8de"/>
+    <rect x="1295" y="474" width="38" height="8" rx="4" fill="#baf0ff"/>
+    <rect x="1295" y="490" width="30" height="8" rx="4" fill="#baf0ff"/>
+    <text x="1270" y="556" class="label">Storage</text>
+    <text x="1268" y="578" class="small">Public blob access</text>
+
+    <rect x="1382" y="446" width="86" height="88" rx="18" fill="#ffffff" stroke="#8cb4f1" stroke-width="2"/>
+    <path d="M1425 462 C1442 462, 1456 476, 1456 493 C1456 509, 1442 523, 1425 523 C1408 523, 1394 509, 1394 493 C1394 476, 1408 462, 1425 462 Z" fill="#f4c23e"/>
+    <path d="M1425 486 C1432 486, 1437 491, 1437 498 C1437 505, 1432 510, 1425 510 C1418 510, 1413 505, 1413 498 C1413 491, 1418 486, 1425 486 Z" fill="#fff2ba"/>
+    <rect x="1422" y="510" width="6" height="20" rx="3" fill="#fff2ba"/>
+    <text x="1396" y="556" class="label">Key Vault</text>
+    <text x="1397" y="578" class="small">Sample secrets</text>
+  </g>
+
+  <g>
+    <rect x="1100" y="622" width="390" height="188" class="group"/>
+    <text x="1128" y="646" class="subheading">Identity and Connectivity</text>
+
+    <rect x="1128" y="686" width="156" height="86" rx="18" fill="#ffffff" stroke="#8cb4f1" stroke-width="2"/>
+    <circle cx="1206" cy="722" r="24" fill="#2d6ac8" opacity="0.88"/>
+    <path d="M1191 722 C1193 709, 1200 700, 1206 700 C1212 700, 1219 709, 1221 722 C1223 735, 1216 744, 1206 744 C1196 744, 1189 735, 1191 722 Z" fill="#b8d7ff"/>
+    <text x="1147" y="790" class="label">Deployment Identity</text>
+    <text x="1160" y="812" class="small">User-assigned managed identity</text>
+
+    <rect x="1310" y="686" width="150" height="86" rx="18" fill="#ffffff" stroke="#8cb4f1" stroke-width="2"/>
+    <circle cx="1355" cy="717" r="12" fill="#53b8ef"/>
+    <circle cx="1412" cy="717" r="12" fill="#2d6ac8"/>
+    <path d="M1367 717 H1400" stroke="#8cb4f1" stroke-width="5" stroke-linecap="round"/>
+    <text x="1331" y="790" class="label">VNet Peering</text>
+    <text x="1341" y="812" class="small">Compute and AKS networks</text>
+  </g>
+
+  <g>
+    <rect x="662" y="270" width="350" height="90" class="pill"/>
+    <text x="688" y="310" class="label">cortex-lab-aks-vnet</text>
+    <text x="920" y="310" class="small">10.0.0.0/16</text>
+    <text x="688" y="338" class="small">aks-subnet: 10.0.0.0/24</text>
+  </g>
+
+  <path d="M582 463 C620 438, 648 400, 680 340" class="stroke-peer"/>
+  <path d="M741 360 C780 405, 812 436, 854 462" class="stroke-peer"/>
+
+  <text x="620" y="900" class="small">Intentional lab misconfigurations include open NSG rules, permissive SQL exposure, public blob access, and relaxed web app security settings.</text>
+  <text x="620" y="928" class="tiny">Resource names include unique suffixes at deployment time; the diagram shows their stable prefixes for readability.</text>
+</svg>
