@@ -23,7 +23,7 @@ az group create --name cortex-cloud-lab-rg --location eastus
 az deployment group create \
   --resource-group cortex-cloud-lab-rg \
   --template-file azure-lab-template.json \
-  --parameters adminPassword='<YourStrongPassword>'
+  --parameters password='<YourStrongPassword>'
 ```
 
 > **Note:** Replace `<YourStrongPassword>` with a strong password meeting Azure complexity requirements.
@@ -54,7 +54,7 @@ az resource list --resource-group cortex-cloud-lab-rg --output table
 | Virtual Network | cortex-lab-vnet | 10.0.0.0/16 with multiple subnets |
 | VM (Linux) | cortex-lab-linux-vm | Ubuntu 22.04, Standard_D2s_v3 |
 | VM (Windows) | cortex-lab-win-vm | Windows Server 2022, Standard_D2s_v3 |
-| AKS | cortex-lab-aks | Kubernetes 1.29, 2-node system pool |
+| AKS | cortex-lab-aks | Kubernetes 1.31.1, 2-node system pool |
 | ACR | cortexlabacr | Azure Container Registry (Standard SKU) |
 | App Service | cortex-lab-webapp | Python web application |
 | Function App | cortex-lab-func | Python Azure Function |
