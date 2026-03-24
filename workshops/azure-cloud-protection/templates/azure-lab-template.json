@@ -1,0 +1,812 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "username": {
+      "type": "string",
+      "defaultValue": "azadmin",
+      "metadata": {
+        "description": "Admin username for VMs and SQL Server"
+      }
+    },
+    "password": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Admin password for VMs and SQL Server. Must meet Azure complexity requirements."
+      }
+    },
+    "trustedIP": {
+      "type": "string",
+      "defaultValue": "*",
+      "metadata": {
+        "description": "Your public IP address (CIDR notation) for SSH/RDP access. Use * for any (lab only)."
+      }
+    },
+    "aksVersion": {
+      "type": "string",
+      "defaultValue": "1.29.0",
+      "metadata": {
+        "description": "Kubernetes version for the AKS cluster"
+      }
+    },
+    "storageAccountType": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_GRS"
+      ]
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {
+        "Workshop": "Cortex Cloud Azure Protection"
+      }
+    },
+    "_artifactsLocation": {
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/davidokeyode/cortex-cloud-workshop-labs/main/workshops/azure-cloud-protection/templates/",
+      "metadata": {
+        "description": "Base URI for scripts and nested templates"
+      }
+    },
+    "_artifactsLocationSasToken": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "SAS token for accessing artifacts (leave empty for public repos)"
+      }
+    }
+  },
+  "variables": {
+    "uniqueSuffix": "[uniqueString(resourceGroup().id)]",
+    "vnetName": "cortex-lab-vnet",
+    "vnetPrefix": "10.10.0.0/16",
+    "subnetName": "default",
+    "subnetPrefix": "10.10.1.0/24",
+    "aksVnetName": "cortex-lab-aks-vnet",
+    "aksVnetPrefix": "10.0.0.0/16",
+    "aksSubnetName": "aks-subnet",
+    "aksSubnetPrefix": "10.0.0.0/24",
+    "nsgName": "cortex-lab-nsg",
+    "winVmName": "[concat('cortex-win-', variables('uniqueSuffix'))]",
+    "winPublicIpName": "[concat('cortex-win-pip-', variables('uniqueSuffix'))]",
+    "winNicName": "[concat('cortex-win-nic-', variables('uniqueSuffix'))]",
+    "linuxVmName": "[concat('cortex-linux-', variables('uniqueSuffix'))]",
+    "linuxPublicIpName": "[concat('cortex-linux-pip-', variables('uniqueSuffix'))]",
+    "linuxNicName": "[concat('cortex-linux-nic-', variables('uniqueSuffix'))]",
+    "availabilitySetName": "cortex-lab-as",
+    "aksClusterName": "[concat('cortex-lab-aks-', variables('uniqueSuffix'))]",
+    "acrName": "[concat('cortexlabcr', variables('uniqueSuffix'))]",
+    "appServicePlanName": "cortex-lab-splan",
+    "webAppName": "[concat('cortex-lab-app-', variables('uniqueSuffix'))]",
+    "funcAppPlanName": "cortex-lab-splan-func",
+    "funcAppName": "[concat('cortex-lab-fa-', variables('uniqueSuffix'))]",
+    "sqlServerName": "[concat('cortex-lab-sql-', variables('uniqueSuffix'))]",
+    "sqlDbName": "[concat('cortex-lab-db-', variables('uniqueSuffix'))]",
+    "storageAccountName": "[concat('cortexlabsa', variables('uniqueSuffix'))]",
+    "blobContainerName": "confidential",
+    "keyVaultName": "[concat('cortex-lab-kv-', variables('uniqueSuffix'))]",
+    "deployIdentityName": "CortexLabDeployIdentity",
+    "installScriptUrl": "[concat(parameters('_artifactsLocation'), 'installscript.ps1', parameters('_artifactsLocationSasToken'))]",
+    "linuxScriptUrl": "[concat(parameters('_artifactsLocation'), 'linuxpostinstall.sh', parameters('_artifactsLocationSasToken'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2023-04-01",
+      "name": "[variables('nsgName')]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "AllowSSH",
+            "properties": {
+              "priority": 100,
+              "direction": "Inbound",
+              "access": "Allow",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "[parameters('trustedIP')]",
+              "destinationAddressPrefix": "*"
+            }
+          },
+          {
+            "name": "AllowRDP",
+            "properties": {
+              "priority": 110,
+              "direction": "Inbound",
+              "access": "Allow",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "[parameters('trustedIP')]",
+              "destinationAddressPrefix": "*"
+            }
+          },
+          {
+            "name": "AllowHTTP",
+            "properties": {
+              "priority": 120,
+              "direction": "Inbound",
+              "access": "Allow",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "80",
+              "sourceAddressPrefix": "[parameters('trustedIP')]",
+              "destinationAddressPrefix": "*"
+            }
+          },
+          {
+            "name": "AllowHTTPS",
+            "properties": {
+              "priority": 130,
+              "direction": "Inbound",
+              "access": "Allow",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "443",
+              "sourceAddressPrefix": "[parameters('trustedIP')]",
+              "destinationAddressPrefix": "*"
+            }
+          },
+          {
+            "name": "AllowShellInABox",
+            "properties": {
+              "priority": 140,
+              "direction": "Inbound",
+              "access": "Allow",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "4200",
+              "sourceAddressPrefix": "[parameters('trustedIP')]",
+              "destinationAddressPrefix": "*"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2023-04-01",
+      "name": "[variables('vnetName')]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+      ],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": ["[variables('vnetPrefix')]"]
+        },
+        "subnets": [
+          {
+            "name": "[variables('subnetName')]",
+            "properties": {
+              "addressPrefix": "[variables('subnetPrefix')]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2023-04-01",
+      "name": "[variables('aksVnetName')]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": ["[variables('aksVnetPrefix')]"]
+        },
+        "subnets": [
+          {
+            "name": "[variables('aksSubnetName')]",
+            "properties": {
+              "addressPrefix": "[variables('aksSubnetPrefix')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+      "apiVersion": "2023-04-01",
+      "name": "[concat(variables('vnetName'), '/peering-to-aks')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('aksVnetName'))]"
+      ],
+      "properties": {
+        "remoteVirtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('aksVnetName'))]"
+        },
+        "allowVirtualNetworkAccess": true,
+        "allowForwardedTraffic": true
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+      "apiVersion": "2023-04-01",
+      "name": "[concat(variables('aksVnetName'), '/peering-to-vm')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('aksVnetName'))]"
+      ],
+      "properties": {
+        "remoteVirtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+        },
+        "allowVirtualNetworkAccess": true,
+        "allowForwardedTraffic": true
+      }
+    },
+    {
+      "type": "Microsoft.Compute/availabilitySets",
+      "apiVersion": "2023-03-01",
+      "name": "[variables('availabilitySetName')]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "sku": {"name": "Aligned"},
+      "properties": {
+        "platformFaultDomainCount": 2,
+        "platformUpdateDomainCount": 3
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2023-04-01",
+      "name": "[variables('winPublicIpName')]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "sku": {"name": "Basic"},
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[variables('winVmName')]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2023-04-01",
+      "name": "[variables('winNicName')]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('winPublicIpName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('winPublicIpName'))]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2023-03-01",
+      "name": "[variables('winVmName')]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('winNicName'))]",
+        "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetName'))]"
+      ],
+      "identity": {"type": "SystemAssigned"},
+      "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetName'))]"
+        },
+        "hardwareProfile": {"vmSize": "Standard_D2s_v3"},
+        "osProfile": {
+          "computerName": "cortex-win",
+          "adminUsername": "[parameters('username')]",
+          "adminPassword": "[parameters('password')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "2022-datacenter-g2",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage",
+            "managedDisk": {"storageAccountType": "StandardSSD_LRS"}
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {"id": "[resourceId('Microsoft.Network/networkInterfaces', variables('winNicName'))]"}
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "apiVersion": "2023-03-01",
+      "name": "[concat(variables('winVmName'), '/installscript')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('winVmName'))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "CustomScriptExtension",
+        "typeHandlerVersion": "1.10",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": ["[variables('installScriptUrl')]"],
+          "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File installscript.ps1"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2023-04-01",
+      "name": "[variables('linuxPublicIpName')]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "sku": {"name": "Basic"},
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[variables('linuxVmName')]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2023-04-01",
+      "name": "[variables('linuxNicName')]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('linuxPublicIpName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('linuxPublicIpName'))]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2023-03-01",
+      "name": "[variables('linuxVmName')]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('linuxNicName'))]",
+        "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetName'))]"
+      ],
+      "identity": {"type": "SystemAssigned"},
+      "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetName'))]"
+        },
+        "hardwareProfile": {"vmSize": "Standard_D2s_v3"},
+        "osProfile": {
+          "computerName": "cortex-linux",
+          "adminUsername": "[parameters('username')]",
+          "adminPassword": "[parameters('password')]",
+          "linuxConfiguration": {"disablePasswordAuthentication": false}
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "Canonical",
+            "offer": "0001-com-ubuntu-server-jammy",
+            "sku": "22_04-lts-gen2",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage",
+            "managedDisk": {"storageAccountType": "StandardSSD_LRS"}
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {"id": "[resourceId('Microsoft.Network/networkInterfaces', variables('linuxNicName'))]"}
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "apiVersion": "2023-03-01",
+      "name": "[concat(variables('linuxVmName'), '/linuxpostinstall')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('linuxVmName'))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Azure.Extensions",
+        "type": "CustomScript",
+        "typeHandlerVersion": "2.1",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": ["[variables('linuxScriptUrl')]"],
+          "commandToExecute": "[concat('bash linuxpostinstall.sh ', parameters('username'))]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ContainerRegistry/registries",
+      "apiVersion": "2023-07-01",
+      "name": "[variables('acrName')]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "sku": {"name": "Basic"},
+      "properties": {"adminUserEnabled": true}
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2024-01-01",
+      "name": "[variables('aksClusterName')]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('aksVnetName'))]"
+      ],
+      "identity": {"type": "SystemAssigned"},
+      "properties": {
+        "kubernetesVersion": "[parameters('aksVersion')]",
+        "dnsPrefix": "[variables('aksClusterName')]",
+        "agentPoolProfiles": [
+          {
+            "name": "systempool",
+            "count": 2,
+            "vmSize": "Standard_D2s_v3",
+            "osType": "Linux",
+            "mode": "System",
+            "vnetSubnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('aksVnetName'), variables('aksSubnetName'))]"
+          }
+        ],
+        "networkProfile": {
+          "networkPlugin": "kubenet",
+          "networkPolicy": "calico",
+          "serviceCidr": "10.20.0.0/16",
+          "dnsServiceIP": "10.20.0.10"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2022-09-01",
+      "name": "[variables('appServicePlanName')]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "sku": {"name": "F1", "tier": "Free"},
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2022-09-01",
+      "name": "[variables('webAppName')]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]"
+      ],
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]",
+        "httpsOnly": false,
+        "siteConfig": {
+          "minTlsVersion": "1.0",
+          "ftpsState": "AllAllowed"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2022-09-01",
+      "name": "[variables('funcAppPlanName')]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "sku": {"name": "Y1", "tier": "Dynamic"},
+      "properties": {"reserved": true}
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2022-09-01",
+      "name": "[variables('funcAppName')]",
+      "location": "[resourceGroup().location]",
+      "kind": "functionapp,linux",
+      "tags": "[parameters('resourceTags')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('funcAppPlanName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ],
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('funcAppPlanName'))]",
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2023-01-01').keys[0].value)]"
+            },
+            {"name": "FUNCTIONS_EXTENSION_VERSION", "value": "~4"},
+            {"name": "FUNCTIONS_WORKER_RUNTIME", "value": "python"}
+          ],
+          "linuxFxVersion": "Python|3.11"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2022-05-01-preview",
+      "name": "[variables('sqlServerName')]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "properties": {
+        "administratorLogin": "[parameters('username')]",
+        "administratorLoginPassword": "[parameters('password')]",
+        "publicNetworkAccess": "Enabled"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/firewallRules",
+      "apiVersion": "2022-05-01-preview",
+      "name": "[concat(variables('sqlServerName'), '/AllowAzureIPs')]",
+      "dependsOn": ["[resourceId('Microsoft.Sql/servers', variables('sqlServerName'))]"],
+      "properties": {"startIpAddress": "0.0.0.0", "endIpAddress": "0.0.0.0"}
+    },
+    {
+      "type": "Microsoft.Sql/servers/firewallRules",
+      "apiVersion": "2022-05-01-preview",
+      "name": "[concat(variables('sqlServerName'), '/AllowAll')]",
+      "dependsOn": ["[resourceId('Microsoft.Sql/servers', variables('sqlServerName'))]"],
+      "properties": {"startIpAddress": "0.0.0.0", "endIpAddress": "255.255.255.255"}
+    },
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "apiVersion": "2022-05-01-preview",
+      "name": "[concat(variables('sqlServerName'), '/', variables('sqlDbName'))]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "dependsOn": ["[resourceId('Microsoft.Sql/servers', variables('sqlServerName'))]"],
+      "sku": {"name": "Basic", "tier": "Basic", "capacity": 5},
+      "properties": {
+        "collation": "SQL_Latin1_General_CP1_CI_AS",
+        "maxSizeBytes": 104857600,
+        "sampleName": "AdventureWorksLT"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2023-01-01",
+      "name": "[variables('storageAccountName')]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "kind": "StorageV2",
+      "sku": {"name": "[parameters('storageAccountType')]"},
+      "properties": {
+        "supportsHttpsTrafficOnly": false,
+        "allowBlobPublicAccess": true,
+        "minimumTlsVersion": "TLS1_0"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2023-01-01",
+      "name": "[concat(variables('storageAccountName'), '/default/', variables('blobContainerName'))]",
+      "dependsOn": ["[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"],
+      "properties": {"publicAccess": "Blob"}
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2023-07-01",
+      "name": "[variables('keyVaultName')]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "dependsOn": ["[resourceId('Microsoft.Web/sites', variables('funcAppName'))]"],
+      "properties": {
+        "tenantId": "[subscription().tenantId]",
+        "sku": {"family": "A", "name": "standard"},
+        "enableSoftDelete": false,
+        "enablePurgeProtection": false,
+        "accessPolicies": [
+          {
+            "tenantId": "[subscription().tenantId]",
+            "objectId": "[reference(resourceId('Microsoft.Web/sites', variables('funcAppName')), '2022-09-01', 'Full').identity.principalId]",
+            "permissions": {"secrets": ["get", "list"]}
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2023-07-01",
+      "name": "[concat(variables('keyVaultName'), '/DatabaseConnectionString')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+        "[resourceId('Microsoft.Sql/servers', variables('sqlServerName'))]"
+      ],
+      "properties": {
+        "value": "[concat('Server=tcp:', variables('sqlServerName'), '.database.windows.net,1433;Database=', variables('sqlDbName'), ';User ID=', parameters('username'), ';Password=', parameters('password'), ';')]"
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2023-07-01",
+      "name": "[concat(variables('keyVaultName'), '/StorageAccountKey')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ],
+      "properties": {
+        "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2023-01-01').keys[0].value]"
+      }
+    },
+    {
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+      "apiVersion": "2023-01-31",
+      "name": "[variables('deployIdentityName')]",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]"
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(resourceGroup().id, variables('deployIdentityName'), 'StorageBlobContributor')]",
+      "dependsOn": ["[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployIdentityName'))]"],
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployIdentityName'))).principalId]",
+        "principalType": "ServicePrincipal"
+      }
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(resourceGroup().id, variables('deployIdentityName'), 'ACRPush')]",
+      "dependsOn": ["[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployIdentityName'))]"],
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8311e382-0749-4cb8-b61a-304f252e45ec')]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployIdentityName'))).principalId]",
+        "principalType": "ServicePrincipal"
+      }
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(resourceGroup().id, variables('winVmName'), 'StorageBlobReader')]",
+      "dependsOn": ["[resourceId('Microsoft.Compute/virtualMachines', variables('winVmName'))]"],
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1')]",
+        "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('winVmName')), '2023-03-01', 'Full').identity.principalId]",
+        "principalType": "ServicePrincipal"
+      }
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(resourceGroup().id, variables('linuxVmName'), 'StorageBlobReader')]",
+      "dependsOn": ["[resourceId('Microsoft.Compute/virtualMachines', variables('linuxVmName'))]"],
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1')]",
+        "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('linuxVmName')), '2023-03-01', 'Full').identity.principalId]",
+        "principalType": "ServicePrincipal"
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deploymentScripts",
+      "apiVersion": "2023-08-01",
+      "name": "importSampleDataToBlob",
+      "location": "[resourceGroup().location]",
+      "kind": "AzureCLI",
+      "tags": "[parameters('resourceTags')]",
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployIdentityName'))]": {}
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices/containers', variables('storageAccountName'), 'default', variables('blobContainerName'))]",
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployIdentityName'))]",
+        "[guid(resourceGroup().id, variables('deployIdentityName'), 'StorageBlobContributor')]"
+      ],
+      "properties": {
+        "azCliVersion": "2.52.0",
+        "retentionInterval": "PT1H",
+        "scriptContent": "[concat('curl -sL \"https://raw.githubusercontent.com/davidokeyode/cortex-cloud-workshop-labs/main/workshops/azure-cloud-protection/templates/sample-data.csv\" -o /tmp/sample-data.csv && az storage blob upload --account-name ', variables('storageAccountName'), ' --container-name ', variables('blobContainerName'), ' --name customer-data.csv --file /tmp/sample-data.csv --auth-mode login')]"
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deploymentScripts",
+      "apiVersion": "2023-08-01",
+      "name": "importVulnerableImageToACR",
+      "location": "[resourceGroup().location]",
+      "kind": "AzureCLI",
+      "tags": "[parameters('resourceTags')]",
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployIdentityName'))]": {}
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ContainerRegistry/registries', variables('acrName'))]",
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('deployIdentityName'))]",
+        "[guid(resourceGroup().id, variables('deployIdentityName'), 'ACRPush')]"
+      ],
+      "properties": {
+        "azCliVersion": "2.52.0",
+        "retentionInterval": "PT1H",
+        "scriptContent": "[concat('az acr import --name ', variables('acrName'), ' --source docker.io/vulnerables/web-dvwa:latest --image dvwa:latest')]"
+      }
+    }
+  ],
+  "outputs": {
+    "windowsVmFQDN": {
+      "type": "string",
+      "value": "[reference(variables('winPublicIpName')).dnsSettings.fqdn]"
+    },
+    "linuxVmFQDN": {
+      "type": "string",
+      "value": "[reference(variables('linuxPublicIpName')).dnsSettings.fqdn]"
+    },
+    "aksClusterName": {
+      "type": "string",
+      "value": "[variables('aksClusterName')]"
+    },
+    "acrName": {
+      "type": "string",
+      "value": "[variables('acrName')]"
+    },
+    "acrLoginServer": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.ContainerRegistry/registries', variables('acrName'))).loginServer]"
+    },
+    "sqlServerFQDN": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Sql/servers', variables('sqlServerName'))).fullyQualifiedDomainName]"
+    },
+    "storageAccountName": {
+      "type": "string",
+      "value": "[variables('storageAccountName')]"
+    },
+    "keyVaultName": {
+      "type": "string",
+      "value": "[variables('keyVaultName')]"
+    },
+    "webAppURL": {
+      "type": "string",
+      "value": "[concat('https://', reference(resourceId('Microsoft.Web/sites', variables('webAppName'))).defaultHostName)]"
+    },
+    "functionAppURL": {
+      "type": "string",
+      "value": "[concat('https://', reference(resourceId('Microsoft.Web/sites', variables('funcAppName'))).defaultHostName)]"
+    }
+  }
+}
