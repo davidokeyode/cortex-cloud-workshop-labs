@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Cortex Cloud serverless agent lab - EMBEDDED mode. Creates the IAM role,
+  a Lambda function (with placeholder code you replace by uploading the
+  embedded package), and a public Function URL. Unlike the layer lab, the
+  agent ships inside the function's own deployment package, so you upload a
+  combined zip in a later step rather than attaching a layer.
+
+Parameters:
+  FunctionName:
+    Type: String
+    Default: do-cortex-embedded-lab-01
+    Description: Name of the test Lambda function
+  PythonRuntime:
+    Type: String
+    Default: python3.12
+    AllowedValues:
+      - python3.9
+      - python3.10
+      - python3.11
+      - python3.12
+    Description: >
+      Python runtime. Confirm this version is supported by the Cortex
+      serverless agent before deploying (Cortex installation wizard / docs).
+
+Resources:
+  EmbeddedFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${FunctionName}-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  EmbeddedFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref FunctionName
+      Description: Cortex Cloud serverless agent lab - EMBEDDED mode
+      Runtime: !Ref PythonRuntime
+      # Placeholder handler. You will upload the embedded package and then
+      # change this to cortex.handler in a later step.
+      Handler: index.handler
+      Role: !GetAtt EmbeddedFunctionRole.Arn
+      Timeout: 30
+      MemorySize: 256
+      # Placeholder code so the stack can be created. It is overwritten when
+      # you upload embedded-function.zip. (Architecture must stay x86_64 to
+      # match the agent's libcortex.so binary.)
+      Architectures:
+        - x86_64
+      Code:
+        ZipFile: |
+          import json
+          def handler(event, context):
+              return {"statusCode": 200,
+                      "headers": {"Content-Type": "application/json"},
+                      "body": json.dumps(
+                          {"note": "placeholder - upload embedded-function.zip"})}
+
+  EmbeddedFunctionUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      TargetFunctionArn: !GetAtt EmbeddedFunction.Arn
+      AuthType: NONE
+
+  EmbeddedFunctionUrlPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref EmbeddedFunction
+      Action: lambda:InvokeFunctionUrl
+      Principal: '*'
+      FunctionUrlAuthType: NONE
+
+Outputs:
+  FunctionNameOut:
+    Description: Name of the test Lambda function
+    Value: !Ref EmbeddedFunction
+  FunctionUrl:
+    Description: Public Function URL used to trigger test actions
+    Value: !GetAtt EmbeddedFunctionUrl.FunctionUrl

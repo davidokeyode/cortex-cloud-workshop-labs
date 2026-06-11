@@ -1,0 +1,123 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Cortex Cloud serverless agent lab - test Lambda function with a Function URL.
+  The function deliberately performs actions that violate the Cortex serverless
+  prevention profile (denied process, listening port 7000, outbound port 7000,
+  outbound IP 8.8.8.8, denied domain google.com) based on a ?action= parameter.
+
+Parameters:
+  FunctionName:
+    Type: String
+    Default: do-cortex-serverless-lab-01
+    Description: Name of the test Lambda function
+  PythonRuntime:
+    Type: String
+    Default: python3.12
+    AllowedValues:
+      - python3.9
+      - python3.10
+      - python3.11
+      - python3.12
+    Description: >
+      Python runtime. Before deploying, confirm this version is listed as
+      supported for the Cortex serverless agent layer (check the runtime
+      support matrix in the Cortex Cloud installation wizard / docs).
+
+Resources:
+  LabFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${FunctionName}-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  LabFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref FunctionName
+      Description: Cortex Cloud serverless agent lab - violation trigger function
+      Runtime: !Ref PythonRuntime
+      Handler: index.handler
+      Role: !GetAtt LabFunctionRole.Arn
+      Timeout: 30
+      MemorySize: 256
+      Code:
+        ZipFile: |
+          import json, socket, subprocess, urllib.request
+
+          def run(action):
+              if action == "process":
+                  out = subprocess.run(["ps", "-ef"], capture_output=True,
+                                       text=True, timeout=10)
+                  return {"action": action, "rc": out.returncode,
+                          "process_lines": len(out.stdout.splitlines())}
+              if action == "listen":
+                  s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                  s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                  s.bind(("0.0.0.0", 7000))
+                  s.listen(1)
+                  s.close()
+                  return {"action": action,
+                          "result": "opened listener on tcp/7000"}
+              if action == "outbound-port":
+                  s = socket.create_connection(("portquiz.net", 7000),
+                                               timeout=6)
+                  s.close()
+                  return {"action": action,
+                          "result": "connected out to portquiz.net:7000"}
+              if action == "outbound-ip":
+                  s = socket.create_connection(("8.8.8.8", 53), timeout=6)
+                  s.close()
+                  return {"action": action,
+                          "result": "connected out to 8.8.8.8:53"}
+              if action == "domain":
+                  req = urllib.request.Request("https://www.google.com",
+                                               headers={"User-Agent": "lab"})
+                  with urllib.request.urlopen(req, timeout=8) as r:
+                      return {"action": action, "http_status": r.status,
+                              "result": "reached google.com"}
+              return {"action": "none",
+                      "usage": "add ?action=process | listen | outbound-port"
+                               " | outbound-ip | domain"}
+
+          def handler(event, context):
+              qs = (event.get("queryStringParameters") or {})
+              action = qs.get("action", "")
+              try:
+                  body = run(action)
+                  body["blocked"] = False
+              except Exception as e:
+                  body = {"action": action, "blocked_or_failed": True,
+                          "error": "%s: %s" % (type(e).__name__, e)}
+              return {"statusCode": 200,
+                      "headers": {"Content-Type": "application/json"},
+                      "body": json.dumps(body)}
+
+  LabFunctionUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      TargetFunctionArn: !GetAtt LabFunction.Arn
+      AuthType: NONE
+
+  LabFunctionUrlPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref LabFunction
+      Action: lambda:InvokeFunctionUrl
+      Principal: '*'
+      FunctionUrlAuthType: NONE
+
+Outputs:
+  FunctionNameOut:
+    Description: Name of the test Lambda function
+    Value: !Ref LabFunction
+  FunctionUrl:
+    Description: Public Function URL used to trigger test actions
+    Value: !GetAtt LabFunctionUrl.FunctionUrl
