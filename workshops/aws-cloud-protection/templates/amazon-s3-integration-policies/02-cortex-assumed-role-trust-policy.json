@@ -5,12 +5,12 @@
       "Sid": "AllowCortexToAssumeRole",
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::<cortex-aws-account-id>:root"
+        "AWS": "arn:aws:iam::006742885340:root"
       },
       "Action": "sts:AssumeRole",
       "Condition": {
         "StringEquals": {
-          "sts:ExternalId": "<external-id-from-cortex>"
+          "sts:ExternalId": "<customer-generated-uuidv4-external-id>"
         }
       }
     }
