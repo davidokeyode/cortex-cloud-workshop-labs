@@ -1,0 +1,22 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowCloudTrailBucketToSendMessages",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "s3.amazonaws.com"
+      },
+      "Action": "sqs:SendMessage",
+      "Resource": "arn:aws:sqs:<region>:<account-id>:<queue-name>",
+      "Condition": {
+        "ArnLike": {
+          "aws:SourceArn": "arn:aws:s3:::<cloudtrail-bucket-name>"
+        },
+        "StringEquals": {
+          "aws:SourceAccount": "<account-id>"
+        }
+      }
+    }
+  ]
+}

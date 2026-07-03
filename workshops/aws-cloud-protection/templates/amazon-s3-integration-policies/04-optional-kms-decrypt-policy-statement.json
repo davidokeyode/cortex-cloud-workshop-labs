@@ -1,0 +1,8 @@
+{
+  "Sid": "DecryptCloudTrailLogs",
+  "Effect": "Allow",
+  "Action": [
+    "kms:Decrypt"
+  ],
+  "Resource": "arn:aws:kms:<region>:<account-id>:key/<key-id>"
+}
